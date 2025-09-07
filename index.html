@@ -6,6 +6,8 @@
     <title>Dashboard - Dinamica della Disinformazione COVID-19</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
 
     <style>
         * {
@@ -114,7 +116,7 @@
         }
 
         .slide-header h1 {
-            color: #4a5568;
+            color: #2d2f3a;
             margin-bottom: 10px;
             font-size: 2.2rem;
             font-weight: 700;
@@ -122,8 +124,14 @@
 
         .slide-header p {
             font-size: 1.2rem;
-            color: #718096;
+            color: #555;
         }
+
+        .slide-header h1, .card h3 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        }
+
 
         .slide-content {
             background: rgba(255, 255, 255, 0.95);
@@ -502,6 +510,130 @@
             object-fit: contain;
         }
 
+        /* Stili per la slide titolo */
+        .title-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .main-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            text-align: center;
+        }
+
+        .title-section {
+            margin-bottom: 20px;
+        }
+
+        .title-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .course-name {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #4f46e5;
+            margin: 0;
+        }
+
+        .covid-image-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .covid-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #4f46e5;
+            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .covid-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(79, 70, 229, 0.4);
+        }
+
+        .secondary-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .authors-section, .date-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            flex: 1;
+            text-align: center;
+            border-left: 4px solid #4f46e5;
+        }
+
+        .authors-section h4, .date-section h4 {
+            font-size: 1rem;
+            color: #4f46e5;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .authors-section p, .date-section p {
+            font-size: 1.2rem;
+            color: #666;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Responsive per la slide titolo */
+        @media (max-width: 968px) {
+            .title-name {
+                font-size: 2.2rem;
+            }
+            
+            .course-name {
+                font-size: 1.4rem;
+            }
+            
+            .covid-image {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .secondary-info {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .title-name {
+                font-size: 1.8rem;
+            }
+            
+            .course-name {
+                font-size: 1.2rem;
+            }
+            
+            .covid-image {
+                width: 120px;
+                height: 120px;
+            }
+}
 
 
     </style>
@@ -567,28 +699,34 @@
         <main class="main-content">
             <!-- Slide 1 -->
             <div class="slide active" id="slide1">
-                <div class="slide-header">
-                    <h1>Decifrare le leggi della dinamica della disinformazione sul COVID-19 nelle reti sociali</h1>
-                    <p>e le implicazioni per il contrasto dei fenomeni di disinformazione</p>
-                </div>
                 <div class="slide-content">
-                    <div class="card">
-                        <h3>📝 Autori dell'Articolo</h3>
-                        <p>Mingxi Cheng, Chenzhong Yin, Shahin Nazarian & Paul Bogdan</p>
+                    <div class="title-layout">
+                        <div class="main-info">
+                            <div class="title-section">
+                                <h2 class="title-name">Decifrare le leggi della dinamica della disinformazione sul COVID-19 nelle reti sociali</h2>
+                                <div class="date-section">
+                                <h4>📄 Autori dell'Articolo</h4>
+                                <p>Mingxi Cheng, Chenzhong Yin, Shahin Nazarian & Paul Bogdan</p>
+                            </div>
+                            </div>
+                        </div>
+                        
+                        <div class="secondary-info">
+                            <div class="authors-section">
+                                <h4>👤 Presentazione di</h4>
+                                <p>Daniele Vozza</p>
+                            </div>
+
+                            
+                            <div class="date-section">
+                                <h4>📚 Corso</h4>
+                                <p>Complessità nei Sistemi e nelle Reti</p>
+                            </div>
+                        </div>
+                            <div class="covid-image-container">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/SARS-CoV-2_without_background.png" alt="COVID-19" class="covid-image">
+                            </div>
                     </div>
-                    <div class="card">
-                        <h3>👤 Presentato da</h3>
-                        <p>Daniele Vozza</p>
-                    </div>
-                    <div class="card">
-                        <h3>📚 Corso</h3>
-                        <p>Complessità nei Sistemi e nelle Reti</p>
-                    </div>
-                    <div class="card">
-                        <h3>📅 Data</h3>
-                        <p>8 Settembre 2025</p>
-                    </div>
-                    <div class="timing">Tempo stimato: 1 minuto</div>
                 </div>
                 <div class="slide-nav">
                     <button disabled>← Precedente</button>
@@ -1181,6 +1319,26 @@
         // Toggle sidebar su mobile
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        let currentSlide = 1;
+        const totalSlides = 12; // cambia col numero reale delle slide
+
+        document.addEventListener('keydown', function(e){
+            if(e.key === "ArrowRight" && currentSlide < totalSlides){
+            showSlide(currentSlide + 1);
+            }
+            if(e.key === "ArrowLeft" && currentSlide > 1){
+            showSlide(currentSlide - 1);
+            }
+        });
+
+        function showSlide(n){
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById('slide' + n).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelector(`.nav-item[data-slide="${n}"]`).classList.add('active');
+            currentSlide = n;
         }
         
     </script>
