@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Dinamica della Disinformazione COVID-19</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 100;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar h2 {
+            padding: 25px 20px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-items {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 5px 10px;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item .number {
+            font-weight: bold;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-header h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .slide-header p {
+            font-size: 1.2rem;
+            color: #718096;
+        }
+
+        .slide-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid #4f46e5;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #f6ad55;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-box {
+            display: inline-block;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 6px 12px; /* meno spazio interno */
+            border-radius: 5px; /* leggermente più stretto */
+            margin: 4px; /* meno spazio esterno */
+            font-size: 0.9rem; /* testo un po' più piccolo */
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3); /* ombra più leggera */
+        }
+
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container img {
+            max-width: 100%;   /* mai più largo del contenitore */
+            max-height: 100%;  /* mai più alto del contenitore */
+            display: block;    /* evita spazi strani */
+            margin: 0 auto;    /* centrato */
+            object-fit: contain; /* mantiene proporzioni */
+            border-radius: 10px; /* opzionale, per estetica */
+}
+
+
+        /* Responsive */
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 968px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .hamburger {
+                display: block;
+            }
+            
+            .slide-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 15px 0;
+            }
+
+            li {
+            display: flex;
+            align-items: flex-start;  /* il testo parte dalla stessa altezza del bullet */
+            gap: 12px;                /* spazio tra bullet e testo */
+            margin: 12px 0;
+            line-height: 1.6;
+            }
+
+            li::before {
+            content: "▸";
+            color: #4f46e5;
+            font-weight: bold;
+            font-size: 2rem;  /* 👉 puoi aumentare quanto vuoi */
+            line-height: 1;   /* evita che il bullet crei spazi verticali extra */
+            flex-shrink: 0;   /* il bullet non si riduce mai */
+            }
+
+
+
+
+        /* Stats grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-card h4 {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: bold;
+        }
+
+        /* Formula */
+        .formula {
+            background: rgba(79, 70, 229, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            border-left: 4px solid #4f46e5;
+        }
+
+        /* Navigazione slide */
+        .slide-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .slide-nav button {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-nav button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .slide-nav button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Timing */
+        .timing {
+            text-align: right;
+            margin-top: 20px;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Stat value */
+        .stat-value {
+            font-weight: bold;
+            color: #4f46e5;
+            background-color: rgba(79, 70, 229, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+        }
+        
+        /* Keyword cloud */
+        .keyword-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .keyword {
+            padding: 8px 15px;
+            background-color: rgba(79, 70, 229, 0.1);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+        }
+        
+        .keyword-large {
+            font-size: 1.3rem;
+            color: #4f46e5;
+            background-color: rgba(79, 70, 229, 0.2);
+        }
+        
+        .keyword-medium {
+            font-size: 1.1rem;
+            color: #6366f1;
+        }
+        
+        /* Two columns layout */
+        .two-columns {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .column {
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .two-columns {
+                flex-direction: column;
+            }
+        }
+
+        /* Stili per la griglia delle metriche */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card:nth-child(1) {
+            border-left: 5px solid #3498db;
+        }
+
+        .metric-card:nth-child(2) {
+            border-left: 5px solid #2ecc71;
+        }
+
+        .metric-card:nth-child(3) {
+            border-left: 5px solid #9b59b6;
+        }
+
+        .metric-icon {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .metric-title {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+
+        .metric-formula {
+            background: rgba(79, 70, 229, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            border-left: 4px solid #4f46e5;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .metric-description {
+            color: #4a5568;
+            line-height: 1.6;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .optimized-image-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .optimized-chart-image {
+            max-height: 300px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+
+
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        
+        <aside class="sidebar" id="sidebar">
+            <h2>📊 Dashboard Presentazione</h2>
+            <nav class="nav-items">
+                <div class="nav-item active" onclick="showSlide(1)" data-slide="1">
+                    <span class="number">01</span>
+                    <span>Titolo e Introduzione</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(2)" data-slide="2">
+                    <span class="number">02</span>
+                    <span>Contesto e Infodemia</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(3)" data-slide="3">
+                    <span class="number">03</span>
+                    <span>Obiettivi della Ricerca</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(4)" data-slide="4">
+                    <span class="number">04</span>
+                    <span>Metodologia</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(5)" data-slide="5">
+                    <span class="number">05</span>
+                    <span>Leggi Statistiche</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(6)" data-slide="6">
+                    <span class="number">06</span>
+                    <span>Evoluzione delle Reti</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(7)" data-slide="7">
+                    <span class="number">07</span>
+                    <span>Fit & Rich Get Richer</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(8)" data-slide="8">
+                    <span class="number">08</span>
+                    <span>Attenzione Pubblica</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(9)" data-slide="9">
+                    <span class="number">09</span>
+                    <span>Deep Learning</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(10)" data-slide="10">
+                    <span class="number">10</span>
+                    <span>Implicazioni</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(11)" data-slide="11">
+                    <span class="number">11</span>
+                    <span>Conclusioni</span>
+                </div>
+                <div class="nav-item" onclick="showSlide(12)" data-slide="12">
+                    <span class="number">12</span>
+                    <span>Q&A</span>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <!-- Slide 1 -->
+            <div class="slide active" id="slide1">
+                <div class="slide-header">
+                    <h1>Decifrare le leggi della dinamica della disinformazione sul COVID-19 nelle reti sociali</h1>
+                    <p>e le implicazioni per il contrasto dei fenomeni di disinformazione</p>
+                </div>
+                <div class="slide-content">
+                    <div class="card">
+                        <h3>📝 Autori dell'Articolo</h3>
+                        <p>Mingxi Cheng, Chenzhong Yin, Shahin Nazarian & Paul Bogdan</p>
+                    </div>
+                    <div class="card">
+                        <h3>👤 Presentato da</h3>
+                        <p>Daniele Vozza</p>
+                    </div>
+                    <div class="card">
+                        <h3>📚 Corso</h3>
+                        <p>Complessità nei Sistemi e nelle Reti</p>
+                    </div>
+                    <div class="card">
+                        <h3>📅 Data</h3>
+                        <p>8 Settembre 2025</p>
+                    </div>
+                    <div class="timing">Tempo stimato: 1 minuto</div>
+                </div>
+                <div class="slide-nav">
+                    <button disabled>← Precedente</button>
+                    <button onclick="showSlide(2)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide" id="slide2">
+                <div class="slide-header">
+                    <h1>Introduzione e Contesto</h1>
+                    <p>L'Infodemia di Disinformazione durante il COVID-19</p>
+                </div>
+                <div class="slide-content">
+                    <div class="highlight">
+                        <h3>🦠 Infodemia di Disinformazione durante il COVID-19</h3>
+                        <p>La pandemia di SARS-CoV-2 ha innescato una significativa "infodemia" di disinformazione legata alla salute.</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🚨 Impatti Negativi</h3>
+                        <p>La rapida diffusione di questa disinformazione ha causato:</p>
+                        <ul>
+                            <li>Panico sociale</li>
+                            <li>Dibattiti politici influenzati</li>
+                            <li>Diffusione di voci pericolose (es. bere candeggina come cura)</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>🌐 Sforzi Comuni</h3>
+                        <p>Accademici, governi e giganti tecnologici (Facebook, Twitter, Google) stanno intensificando gli sforzi per:</p>
+                        <ul>
+                            <li>Monitorare la disinformazione</li>
+                            <li>Identificare pattern</li>
+                            <li>Analizzare la diffusione</li>
+                            <li>Bloccare contenuti falsi</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="highlight">
+                        <h3>🎯 Novità del Paper</h3>
+                        <p>Prima analisi delle reti di disinformazione sul COVID-19 che combina l'elaborazione del linguaggio naturale (NLP) con l'analisi delle reti complesse</p>
+                    </div>
+                    
+                    <div class="timing">Tempo stimato: 1-1.5 minuti</div>
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(1)">← Precedente</button>
+                    <button onclick="showSlide(3)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide" id="slide3">
+                <div class="slide-header">
+                    <h1>Obiettivi della Ricerca</h1>
+                    <p>Cosa si propone di scoprire e risolvere l'articolo</p>
+                </div>
+                <div class="slide-content">
+                    <div class="card">
+                        <h3>🎯 Obiettivo 1: Analisi Statistiche</h3>
+                        <p>Analizzare le tendenze di diffusione della disinformazione sul COVID-19 e caratterizzarne le leggi statistiche</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🔍 Obiettivo 2: Decifrare Leggi di Evoluzione</h3>
+                        <p>Decifrare le leggi che regolano l'evoluzione delle reti di disinformazione, esplorando l'ottimizzazione del trasferimento di informazioni, la robustezza e i meccanismi di crescita</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🤖 Obiettivo 3: Framework Predittivo</h3>
+                        <p>Sviluppare un framework di deep learning per prevedere accuratamente i nodi centrali (post altamente influenti) basandosi unicamente sul contenuto testuale</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🛡️ Obiettivo 4: Implicazioni</h3>
+                        <p>Proporre implicazioni per il contrasto effettivo della disinformazione, basandosi sull'analisi delle reti e sulla previsione dei nodi critici</p>
+                    </div>
+                    
+                    <div class="timing">Tempo stimato: 0.5-1 minuto</div>
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(2)">← Precedente</button>
+                    <button onclick="showSlide(4)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide" id="slide4">
+                <div class="slide-header">
+                    <h1>Metodologia</h1>
+                    <p>Come è stata condotta la ricerca</p>
+                </div>
+                <div class="slide-content">
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <h4>Post Analizzati</h4>
+                            <div class="value">60.798</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Categorie</h4>
+                            <div class="value">5</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Giorni</h4>
+                            <div class="value">64</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📊 Dati Raccolti</h3>
+                        <p>Analisi di un dataset di 60.798 post di disinformazione sul COVID-19 raccolti da Twitter tra il 1° marzo e il 3 maggio 2020.</p>
+                        <p>Il dataset include 5 categorie principali:<span class="metric-box">unreliable</span>, <span class="metric-box">political</span>, <span class="metric-box">bias</span>, <span class="metric-box">conspiracy</span>, <span class="metric-box">clickbait</span></p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🔗 Costruzione delle Reti di Disinformazione</h3>
+                        <p>Sono state esplorate tre diverse strategie di costruzione per catturare la complessità dinamica:</p>
+                        
+                        <div class="two-columns">
+                            <div class="column">
+                                <h4>1. Reti giornaliere (60 reti)</h4>
+                                <p>Nodi: singole frasi di disinformazione emerse in un giorno</p>
+                                <p>Similarità testuale > <strong>70%</strong></p>
+                            </div>
+                            <div class="column">
+                                <h4>2. Rete con crescita "monotonica"</h4>
+                                <p>Vengono aggiunti progressivamente nuovi nodi e legami nel tempo</p>
+                                <p>Similarità testuale > <strong>80%</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="highlight">
+                            <h4>3. Rete con meccanismo di eliminazione (più realistica)</h4>
+                            <p>Nodi eliminati se non attirano nuove connessioni per <strong>\(\delta= 3 \)</strong> giorni consecutivi</p>
+                            <p>Similarità testuale > <strong>80%</strong></p>
+                        </div>
+                    </div>
+                
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(3)">← Precedente</button>
+                    <button onclick="showSlide(5)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide" id="slide5">
+                <div class="slide-header">
+                    <h1>Scoperta 1: Leggi Statistiche della Popolarità</h1>
+                    <p>Distribuzione Log-Normale Dominante</p>
+                </div>
+                <div class="slide-content">
+                    
+                    <div class="card">
+                        <h3>📊 Distribuzione Log-Normale</h3>
+                        <p>La popolarità media della disinformazione sul COVID-19 è ben descritta da una distribuzione log-normale</p>
+                        
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <h4>Test di Kolmogorov-Smirnov</h4>
+                                <div class="value">pKS > 0.1</div>
+                                <p>Per tutte le 5 categorie</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Test verosimiglianza</h4>
+                                <div class="value">R > 0</div>
+                                <p>p > 0.05 in tutti i casi</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <img src="lognormale.png" alt="Distribuzione log-normale" class="chart-image">
+                    </div>
+
+                    <div class="highlight">
+                        <h3>🧠 Implicazione Teorica</h3>
+                        <p>La popolarità della disinformazione obbedisce a un processo moltiplicativo, simile ai sistemi di Lotka-Volterra generalizzati (GLV), dove diverse forme di disinformazione competono costantemente per l'attenzione collettiva</p>
+                    </div>
+
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(4)">← Precedente</button>
+                    <button onclick="showSlide(6)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 6 -->
+            <div class="slide" id="slide6">
+                <div class="slide-header">
+                    <h1>Scoperta 2: Evoluzione delle Reti</h1>
+                    <p>Ottimizzazione e Robustezza</p>
+                </div>
+                <div class="slide-content">
+
+                    <!-- Introduzione -->
+                    <div class="card">
+                        <h3>🔧 Formulazione 1: Reti Giornaliere (60 giorni)</h3>
+                        <p>I nodi rappresentano singole frasi di disinformazione apparse in un giorno su Twitter.</p>
+                        <p>I collegamenti (archi) catturano la somiglianza tra le frasi (\( \ge 70\% \)) utilizzando il modello <b>Sentence-Transformer</b> e la <b>distanza coseno</b>.</p>
+                    </div>
+
+                    <!-- Nuova sezione: Metriche -->
+                    <div class="card">
+                        <h3>📊 Metriche Misurate</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon">📈</div>
+                                <h3 class="metric-title">Centralità di Grado</h3>
+                                <div class="metric-formula">
+                                    \( Degree(n) = deg(n) \)
+                                </div>
+                                <p class="metric-description">
+                                    Misura il numero di collegamenti di un nodo \(n\).  Un grado più alto indica una maggiore capacità di propagare informazioni.
+                                </p>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-icon">📏</div>
+                                <h3 class="metric-title">Centralità di Vicinanza</h3>
+                                <div class="metric-formula">
+                                    \( Closeness(n) = \dfrac{1}{\sum_{u} d(u,n)} \)
+                                </div>
+                                <p class="metric-description">
+                                    Quantifica la lunghezza media del percorso più breve tra un nodo e tutti gli altri. Valori alti indicano che il nodo è vicino agli altri.
+                                </p>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-icon">🔄</div>
+                                <h3 class="metric-title">Centralità di Secondo Ordine</h3>
+                                <p class="metric-description">
+                                    Misura il tempo medio per rivisitare un nodo seguendo una random walk. Una centralità di secondo ordine più alta indica più percorsi informativi che passano attraverso il nodo, rendendo la rete meno robusta agli attacchi mirati.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Grafico -->
+                    <div class="chart-container">
+                        <img src="centrality.png" alt="Centralità delle Reti" class="chart-image">
+                    </div>
+
+                    <div class="two-columns">
+                        <div class="column">
+                            <div class="card">
+                                <h3>📈 Ottimizzazione Trasferimento</h3>
+                                <p>Nei primi 10 giorni, <b>la centralità di grado e di vicinanza</b> aumentano significativamente, poi si stabilizzano.</p>
+                                <p>Le reti di disinformazione <b>ottimizzano la loro topologia</b> per supportare un flusso di informazioni più elevato e <b>minimizzare</b> la latenza di trasmissione.</p>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card">
+                                <h3>⚠️ Sacrificio della Robustezza</h3>
+                                <p>Dopo una fluttuazione iniziale, la <b>centralità di secondo ordine</b> mostra una tendenza alla saturazione negli ultimi 50 giorni.</p>
+                                <p>Le reti di disinformazione diventano <b>meno robuste</b> e <b>più vulnerabili</b> agli attacchi nel tempo.</p>
+                            </div>
+                    </div>
+                    </div>
+                        <div class="highlight">
+                        <h3>🎯 Conclusione</h3>
+                        <p>Le reti di disinformazione COVID-19 tendono a ottimizzare il trasferimento di informazioni sacrificando la robustezza.</p>
+                    </div>
+                </div>
+
+                <div class="slide-nav">
+                    <button onclick="showSlide(5)">← Precedente</button>
+                    <button onclick="showSlide(7)">Successiva →</button>
+                </div>
+            </div>
+
+
+
+            <!-- Slide 7 -->
+            <div class="slide" id="slide7">
+                <div class="slide-header">
+                    <h1>Scoperta 3: Coesistenza di "Fit Get Richer" e "Rich Get Richer"</h1>
+                    <p>Meccanismi di crescita delle reti</p>
+                </div>
+                <div class="slide-content">
+                    <div class="card">
+                        <h3>🔧 Formulazione 2: Rete con crescita "monotonica"</h3>
+                        <p>Costruzione di una singola rete cumulativa, aggiungendo nodi e collegamenti ogni giorno con una soglia di somiglianza testuale \(\ge 80\%\) , senza meccanismo di eliminazione dei nodi.</p>
+                        <p>Assume la coesistenza e la tempo-invarianza dei meccanismi di PA e node fitness.</p>
+                    </div>
+
+                    <div class="card">
+                        <h3>📦 Metodologia</h3>
+                        <p>La probabilità di un nodo di attrarre nuovi link è definita come:</p>
+                        <div class="formula">
+                            \(P \propto A_k \times \eta\)
+                        </div>
+                        <p>Dove \(A_k\) è la funzione PA e \(\eta\) è la fitness del nodo. Analisi condotta usando il pacchetto PAFit (R package).</p>
+                    </div>
+
+                    <div class="two-columns">
+                        <div class="column">
+                            <div class="card">
+                                <h3>🌟 Fit Get Richer</h3>
+                                <ul>
+                                    <li>Nodi con maggiore "fitness" (qualità o attrattività) hanno una maggiore probabilità di attrarre nuove connessioni.</li>
+                                    <li>Distribuzioni di fitness mostrano "code pesanti" (heavy-tailed distributions), un chiaro segno dell'effetto "fit get richer".</li>
+                                    <li>Il valore massimo della fitness dei nodi aumenta nel tempo.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card">
+                                <h3>💰 Rich Get Richer</h3>
+                                <ul>
+                                    <li>Nodi con più connessioni esistenti (alto grado) sono più propensi ad acquisirne di nuove.</li>
+                                    <li>Funzioni di attaccamento preferenziale (PA) stimate sono crescenti rispetto al grado.</li>
+                                    <li>Tendenza log-lineare coerente con i modelli di Barabási-Albert.</li>
+                                        <div class="formula">
+                                            \(Ak = k^\alpha\)
+                                        </div>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <h3>⚠️ Limitazioni</h3>
+                        <p>Questa formulazione non cattura la natura in rapida evoluzione della disinformazione perché non considera l'eliminazione dei nodi, il che contraddice il fatto che l'attenzione del pubblico si sposta rapidamente.</p>
+                    </div>
+                </div>
+
+                <div class="slide-nav">
+                    <button onclick="showSlide(6)">← Precedente</button>
+                    <button onclick="showSlide(8)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 8 -->
+            <div class="slide" id="slide8">
+                <div class="slide-header">
+                    <h1>Scoperta 4: Impatto dello Spostamento dell'Attenzione Pubblica</h1>
+                    <p>La scoperta più innovativa</p>
+                </div>
+                <div class="slide-content">
+                    <div class="card">
+                        <h3>🔧 Formulazione 3: Rete con Meccanismo di Eliminazione dei Nodi </h3>
+                        <p>Introdotta per riflettere più realisticamente il <strong>rapido cambiamento</strong> delle reti di disinformazione, dove <strong>l'attenzione del pubblico si sposta rapidamente</strong>.</p>
+                        <p>Se un nodo (una frase) <strong>non attrae nuove connessioni per tre giorni consecutivi</strong> \(\delta=3\), viene <strong>rimosso dalla rete</strong> insieme a tutti i suoi archi. La <strong>soglia di somiglianza testuale</strong> è dell'\(80%\).</p>
+                    </div>
+
+                    <div class="two-columns">
+                        <div class="column">
+                            <div class="card">
+                                <h3>📈 Attaccamento Lineare</h3>
+                                <p>La probabilità di attaccamento nei primi 50 giorni è <strong>lineare</strong> rispetto al grado del nodo, non <strong>log-lineare</strong> come in altre reti del mondo reale (WWW). Ciò implica un effetto <strong>"rich get richer" più debole</strong>.</p>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card">
+                                <h3>🔄 Cicli di Espansione e Contrazione</h3>
+                                <p>La rete sperimenta <strong>cicli di espansione e contrazione</strong>. Tra il giorno 50 e 55, si osserva una fase di <strong>distruzione e ricostruzione</strong>.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-columns">
+                        <div class="column">
+                            <div class="card">
+                                <h3>⏱️ Fitness Variabile</h3>
+                                <p>La fitness dei nodi è <strong>variabile nel tempo</strong>, un'osservazione distinta dall'assunto comune di <strong>fitness invariante</strong>. La fitness di un nodo <strong>aumenta fino a due giorni prima della sua eliminazione</strong>.</p>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card">
+                                <h3>📉 Nessun "Fit Get Richer" Chiaro</h3>
+                                <p>Le distribuzioni di fitness in questo modello non mostrano la proprietà di <strong>"coda pesante"</strong>, indicando l'<strong>assenza di un chiaro effetto "fit get richer"</strong> in presenza di eliminazione dei nodi.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🔍 Analisi Parole Chiave (TF-IDF)</h3>
+                        
+                        <div class="two-columns">
+                            <div class="column">
+                                <h4>Giorni 0-50</h4>
+                                <div class="keyword-cloud">
+                                    <span class="keyword keyword-large">Trump</span>
+                                    <span class="keyword keyword-large">presidente</span>
+                                    <span class="keyword keyword-large">Casa Bianca</span>
+                                </div>
+                                <p>Prevalenza di <strong>argomenti politici</strong></p>
+                            </div>
+                            <div class="column">
+                                <h4>Giorni 49-55</h4>
+                                <div class="keyword-cloud">
+                                    <span class="keyword keyword-large">New York</span>
+                                    <span class="keyword keyword-large">morti</span>
+                                    <span class="keyword keyword-large">pazienti</span>
+                                </div>
+                                <p><strong>Termini medici/geografici</strong> dominanti</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <img src="words.png" alt="Top Parole" class="chart-image">
+                    </div>
+                    
+                    <div class="highlight">
+                        <h3>🧠 Necessità di Nuovi Modelli</h3>
+                        <p>Queste osservazioni evidenziano la necessità di <strong>nuovi modelli teorici di rete</strong> che possano catturare la <strong>natura in rapida evoluzione</strong> delle reti e collegare <strong>l'attenzione collettiva</strong> alla scienza delle reti</p>
+                    </div>
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(7)">← Precedente</button>
+                    <button onclick="showSlide(9)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 9 -->
+            <div class="slide" id="slide9">
+                <div class="slide-header">
+                    <h1>Previsione dei Nodi Centrali con Deep Learning</h1>
+                    <p>Framework predittivo per il contrasto della disinformazione</p>
+                </div>
+                
+                <div class="slide-content">
+                    <div class="card">
+                        <h3>🧠 Framework di Deep Learning (DNN)</h3>
+                        <p>Input: embeddings BERT di lunghezza 768 per rappresentare le frasi.</p>
+                        <p>La previsione avviene utilizzando unicamente l'embedding della frase del post come input, senza la necessità di conoscere l'intera topologia della rete.</p>
+
+                        <div class="optimized-image-container">
+                            <img src="dnn.png" alt="Architettura DNN" class="optimized-chart-image">
+                        </div>
+                    </div>
+
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <h4>Grado</h4>
+                            <div class="value">94.19%</div>
+                            <p>Accuratezza a 1 giorno</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Vicinanza</h4>
+                            <div class="value">94.25%</div>
+                            <p>Accuratezza a 1 giorno</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Betweenness</h4>
+                            <div class="value">83.25%</div>
+                            <p>Accuratezza a 1 giorno</p>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <h3>🎯 Implicazione Strategica</h3>
+                        <p>Questa capacità di previsione in tempo reale è fondamentale per il contrasto della disinformazione. Permette di identificare rapidamente, filtrare e potenzialmente sopprimere i nodi centrali prima che diventino virali, interrompendo così gravemente il trasferimento di informazioni nella rete.</p>
+                    </div>
+
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(8)">← Precedente</button>
+                    <button onclick="showSlide(10)">Successiva →</button>
+                </div>
+            </div>
+
+
+            <!-- Slide 10 -->
+            <div class="slide" id="slide10">
+                <div class="slide-header">
+                    <h1>Implicazioni e Contributi</h1>
+                    <p>L'impatto della ricerca</p>
+                </div>
+                <div class="slide-content">
+                    
+                    <div class="card">
+                        <h3>📚 Comprensione Profonda</h3>
+                        <p>Il lavoro fornisce una comprensione più profonda delle leggi statistiche (distribuzione log-normale) e dei meccanismi di evoluzione della disinformazione sul COVID-19</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🔭 Nuovi Orizzonti Teorici</h3>
+                        <p>Evidenzia i limiti dei modelli di rete attuali e la necessità di nuove strategie e modelli teorici per caratterizzare reti sociali in rapida evoluzione</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🛠️ Strumento Pratico di Contrasto</h3>
+                        <p>Il framework di deep learning offre un metodo pratico, veloce e accurato per identificare e mitigare la diffusione di disinformazione in tempo reale, utilizzando solo il contenuto testuale</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🤝 Contributo Interdisciplinare</h3>
+                        <p>Favorisce e avanza la ricerca interdisciplinare tra elaborazione del linguaggio naturale e scienza delle reti complesse, due campi cruciali per affrontare le sfide dell'infodemia</p>
+                    </div>
+                    
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(9)">← Precedente</button>
+                    <button onclick="showSlide(11)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 11 -->
+            <div class="slide" id="slide11">
+                <div class="slide-header">
+                    <h1>Conclusioni e Lavori Futuri</h1>
+                    <p>Prospettive future della ricerca</p>
+                </div>
+                <div class="slide-content">
+                    <div class="card">
+                        <h3>🎯 Conclusioni Principali</h3>
+                        <p>La lotta alla disinformazione richiede una comprensione dinamica e predittiva delle reti e dell'attenzione pubblica, andando oltre i modelli statici</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🚀 Lavori Futuri Indirizzati dal Paper</h3>
+                        <p>Le scoperte di questo studio aprono la strada a diverse direzioni di ricerca:</p>
+                        <ul>
+                            <li>Sviluppo di algoritmi per ricostruire reti complete da osservazioni parziali, scarse e rumorose</li>
+                            <li>Progettazione di strategie per controllare le reti in modo intelligente e aumentare la consapevolezza degli utenti</li>
+                            <li>Studio delle interazioni tra dinamiche di opinione multiple e in rapida evoluzione, e in particolare l'interazione tra informazioni vere e false</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="highlight">
+                        <h3>🔮 Prospettive a Lungo Termine</h3>
+                        <p>Integrazione di modelli predittivi con piattaforme sociali esistenti per un contrasto più efficace della disinformazione in tempo reale, preservando nel contempo la libertà di espressione.</p>
+                    </div>
+                    
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(10)">← Precedente</button>
+                    <button onclick="showSlide(12)">Successiva →</button>
+                </div>
+            </div>
+
+            <!-- Slide 12 -->
+            <div class="slide" id="slide12">
+                <div class="slide-header">
+                    <h1>Domande?</h1>
+                    <p>Grazie per l'attenzione!</p>
+                </div>
+                <div class="slide-content">
+                    <div style="text-align: center; padding: 40px 0;">
+                        <div style="font-size: 6rem; margin-bottom: 30px;">❓</div>
+                        <h2>Sono disponibile a rispondere alle vostre domande</h2>
+                        <p>Grazie per l'attenzione dimostrata durante la presentazione</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📧 Contatti</h3>
+                        <p>Email: daniele.vozza@mail.polimi.it</p>
+                        <p>Università: Politecnico di Milano</p>
+                    </div>
+                    
+                </div>
+                <div class="slide-nav">
+                    <button onclick="showSlide(11)">← Precedente</button>
+                    <button disabled>Successiva →</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Gestione della visualizzazione delle slide
+        function showSlide(n) {
+            // Nascondi tutte le slide
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Mostra la slide selezionata
+            document.getElementById('slide' + n).classList.add('active');
+            
+            // Aggiorna i pulsanti di navigazione
+            document.querySelectorAll('.nav-item').forEach((item, index) => {
+                if (index + 1 === n) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Scrolla in alto
+            window.scrollTo(0, 0);
+        }
+        
+        // Toggle sidebar su mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+        
+    </script>
+</body>
+</html><!DOCTYPE html>
