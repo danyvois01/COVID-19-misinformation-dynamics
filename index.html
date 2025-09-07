@@ -741,38 +741,42 @@
                     <p>L'Infodemia di Disinformazione durante il COVID-19</p>
                 </div>
                 <div class="slide-content">
-                    <div class="highlight">
+                    <div class="card">
                         <h3>🦠 Infodemia di Disinformazione durante il COVID-19</h3>
                         <p>La pandemia di SARS-CoV-2 ha innescato una significativa "infodemia" di disinformazione legata alla salute.</p>
                     </div>
-                    
-                    <div class="card">
-                        <h3>🚨 Impatti Negativi</h3>
-                        <p>La rapida diffusione di questa disinformazione ha causato:</p>
-                        <ul>
-                            <li>Panico sociale</li>
-                            <li>Dibattiti politici influenzati</li>
-                            <li>Diffusione di voci pericolose (es. bere candeggina come cura)</li>
-                        </ul>
-                    </div>
 
-                    <div class="card">
-                        <h3>🌐 Sforzi Comuni</h3>
-                        <p>Accademici, governi e giganti tecnologici (Facebook, Twitter, Google) stanno intensificando gli sforzi per:</p>
-                        <ul>
-                            <li>Monitorare la disinformazione</li>
-                            <li>Identificare pattern</li>
-                            <li>Analizzare la diffusione</li>
-                            <li>Bloccare contenuti falsi</li>
-                        </ul>
+                    <div class="two-columns">
+                        <div class="column">
+                            <div class="card">
+                                <h3>🚨 Impatti Negativi</h3>
+                                <p>La rapida diffusione di questa disinformazione ha causato:</p>
+                                <ul>
+                                    <li>Panico sociale</li>
+                                    <li>Dibattiti politici influenzati</li>
+                                    <li>Diffusione di voci pericolose (es. bere candeggina come cura)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="card">
+                                <h3>🌐 Sforzi Comuni</h3>
+                                <p>Accademici, governi e giganti tecnologici (Facebook, Twitter, Google) stanno intensificando gli sforzi per:</p>
+                                <ul>
+                                    <li>Monitorare la disinformazione</li>
+                                    <li>Analizzare la diffusione</li>
+                                    <li>Bloccare contenuti falsi</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
+                    
                     
                     <div class="highlight">
                         <h3>🎯 Novità del Paper</h3>
                         <p>Prima analisi delle reti di disinformazione sul COVID-19 che combina l'elaborazione del linguaggio naturale (NLP) con l'analisi delle reti complesse</p>
                     </div>
                     
-                    <div class="timing">Tempo stimato: 1-1.5 minuti</div>
                 </div>
                 <div class="slide-nav">
                     <button onclick="showSlide(1)">← Precedente</button>
@@ -788,26 +792,24 @@
                 </div>
                 <div class="slide-content">
                     <div class="card">
-                        <h3>🎯 Obiettivo 1: Analisi Statistiche</h3>
+                        <h3>🎯 1. Analisi Statistiche</h3>
                         <p>Analizzare le tendenze di diffusione della disinformazione sul COVID-19 e caratterizzarne le leggi statistiche</p>
                     </div>
                     
                     <div class="card">
-                        <h3>🔍 Obiettivo 2: Decifrare Leggi di Evoluzione</h3>
+                        <h3>🔍 2. Decifrare Leggi di Evoluzione</h3>
                         <p>Decifrare le leggi che regolano l'evoluzione delle reti di disinformazione, esplorando l'ottimizzazione del trasferimento di informazioni, la robustezza e i meccanismi di crescita</p>
                     </div>
                     
                     <div class="card">
-                        <h3>🤖 Obiettivo 3: Framework Predittivo</h3>
+                        <h3>🤖 3. Framework Predittivo</h3>
                         <p>Sviluppare un framework di deep learning per prevedere accuratamente i nodi centrali (post altamente influenti) basandosi unicamente sul contenuto testuale</p>
                     </div>
                     
                     <div class="card">
-                        <h3>🛡️ Obiettivo 4: Implicazioni</h3>
+                        <h3>🛡️ 4. Implicazioni</h3>
                         <p>Proporre implicazioni per il contrasto effettivo della disinformazione, basandosi sull'analisi delle reti e sulla previsione dei nodi critici</p>
                     </div>
-                    
-                    <div class="timing">Tempo stimato: 0.5-1 minuto</div>
                 </div>
                 <div class="slide-nav">
                     <button onclick="showSlide(2)">← Precedente</button>
@@ -1033,7 +1035,6 @@
                                 <ul>
                                     <li>Nodi con maggiore "fitness" (qualità o attrattività) hanno una maggiore probabilità di attrarre nuove connessioni.</li>
                                     <li>Distribuzioni di fitness mostrano "code pesanti" (heavy-tailed distributions), un chiaro segno dell'effetto "fit get richer".</li>
-                                    <li>Il valore massimo della fitness dei nodi aumenta nel tempo.</li>
                                 </ul>
                             </div>
                         </div>
@@ -1042,10 +1043,9 @@
                                 <h3>💰 Rich Get Richer</h3>
                                 <ul>
                                     <li>Nodi con più connessioni esistenti (alto grado) sono più propensi ad acquisirne di nuove.</li>
-                                    <li>Funzioni di attaccamento preferenziale (PA) stimate sono crescenti rispetto al grado.</li>
-                                    <li>Tendenza log-lineare coerente con i modelli di Barabási-Albert.</li>
+                                    <li>Funzioni di attaccamento preferenziale (PA) stimate sono crescenti rispetto al grado e hanno una tendenza log-lineare coerente con i modelli di Barabási-Albert.</li>
                                         <div class="formula">
-                                            \(Ak = k^\alpha\)
+                                            \(A_k = k^\alpha\)
                                         </div>
                                 </ul>
                             </div>
@@ -1073,8 +1073,8 @@
                 <div class="slide-content">
                     <div class="card">
                         <h3>🔧 Formulazione 3: Rete con Meccanismo di Eliminazione dei Nodi </h3>
-                        <p>Introdotta per riflettere più realisticamente il <strong>rapido cambiamento</strong> delle reti di disinformazione, dove <strong>l'attenzione del pubblico si sposta rapidamente</strong>.</p>
-                        <p>Se un nodo (una frase) <strong>non attrae nuove connessioni per tre giorni consecutivi</strong> \(\delta=3\), viene <strong>rimosso dalla rete</strong> insieme a tutti i suoi archi. La <strong>soglia di somiglianza testuale</strong> è dell'\(80%\).</p>
+                        <p>Introdotta per riflettere più realisticamente il rapido cambiamento delle reti di disinformazione, dove <strong>l'attenzione del pubblico si sposta rapidamente</strong>.</p>
+                        <p>Se un nodo (una frase) non attrae nuove connessioni per tre giorni consecutivi \(\delta=3\), viene <strong>rimosso dalla rete</strong> insieme a tutti i suoi archi. La <strong>soglia di somiglianza testuale</strong> è dell'\(80 \%\).</p>
                     </div>
 
                     <div class="two-columns">
@@ -1237,10 +1237,6 @@
                     <p>Prospettive future della ricerca</p>
                 </div>
                 <div class="slide-content">
-                    <div class="card">
-                        <h3>🎯 Conclusioni Principali</h3>
-                        <p>La lotta alla disinformazione richiede una comprensione dinamica e predittiva delle reti e dell'attenzione pubblica, andando oltre i modelli statici</p>
-                    </div>
                     
                     <div class="card">
                         <h3>🚀 Lavori Futuri Indirizzati dal Paper</h3>
@@ -1279,8 +1275,8 @@
                     
                     <div class="card">
                         <h3>📧 Contatti</h3>
-                        <p>Email: daniele.vozza@mail.polimi.it</p>
-                        <p>Università: Politecnico di Milano</p>
+                        <p><strong>Email:</strong> daniele.vozza@mail.polimi.it</p>
+                        <p><strong>Università:</strong> Politecnico di Milano</p>
                     </div>
                     
                 </div>
